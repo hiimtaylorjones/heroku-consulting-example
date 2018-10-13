@@ -1,0 +1,14 @@
+<h1>Send Post</h1>
+
+<%= form_tag emails_path do %>
+  <%= hidden_field_tag "post_id", params[:post_id] %>
+  <p>
+    <label>Email</label><br />
+    <%= text_field_tag "email" %>
+  </p>
+
+  <p>
+    <%= submit_tag "Send" %>
+  </p>
+
+<% end %>
