@@ -159,7 +159,7 @@ DEPENDENCIES
   jquery-rails
   pg (~> 0.15)
   quiet_assets
-  rails (= 4.2.10)
+  rails (~> 4.2.10)
   sass-rails (~> 5.0)
   sdoc (~> 0.4.0)
   spring
