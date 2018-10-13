@@ -33,6 +33,18 @@ Use a pagination library to add the ability to sort your larger sets of data int
 
 For more info on H12 errors, check out the Heroku documentation here: https://devcenter.heroku.com/articles/error-codes#h12-request-timeout
 
+# Notes on Known Issue #2
+
+Heroku delegates the responsibility of redirecting to SSL (or HTTPS) at the application level. This means there's no "magic" setting or button on Heroku to presss that does this. Since we're using a Rails application, we'll need to make that change at the `config/production.rb` level via:
+
+```ruby
+config.force_ssl = true
+```
+
+Please note that the `config/production.rb` change is unique to what we're doing with our app. If you want SSL at other app stages on Heroku, we'll need to update those files to force ssl as well.
+
+Source: https://help.heroku.com/J2R1S4T8/can-heroku-force-an-application-to-use-ssl-tls
+
 # Development Log
 
 ## October 12 2018
