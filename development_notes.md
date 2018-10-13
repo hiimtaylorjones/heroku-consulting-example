@@ -8,7 +8,35 @@
   6. My main index page that lists all the posts is really slow and has a ton of DB queries. What's going on here?
   7. I added this awesome feature to email me a post. Example: http://localhost:3000/emails/new?post_id=66  But when I submit the form, it's kind of slow. Any ideas on how I can speed this up?
 
-# October 12 2018
+# Notes on Known Issues #1
+
+Heroku offers a variety of errors to better inform users around what's happening in their application. The error that's specifically being referenced (H12) is one that's triggered when your HTTP request takes longer than 30 seconds to complete on your Heroku instance or instances. So, while it may not take 30 seconds to complete locally, its happening on Heroku and triggering that error.
+
+Looking at your application, I'm seeing a lots of usage of `.all` being called on most of the models on your `#GET Index` endpoints. When we work with smaller data sets, this implementation performs without much of a drag on request times. However, when we scale up to larger data sets (think 1000 vs 50), retreiving 1000 records from smaller Heroku instances can trigger an H12 error. Luckily, there are a few things we can do to prevent this.
+
+I can provide two important short and long term reccomendations based around this finding.
+
+Short Term: 
+
+Use a limit to your index calls. You can do the following:
+
+```
+# Grab 25 comments
+Comment.all.limit(25)
+# Grab the 25 most recent comments
+Comment.order(:created_at, :desc).limit(25)
+```
+
+Long Term:
+
+Use a pagination library to add the ability to sort your larger sets of data into easily digestable pages. Then add some UI elements to help users sort through each page of resources instead of trying to fetch the entire `.all` of a resource. 
+
+
+For more info on H12 errors, check out the Heroku documentation here: https://devcenter.heroku.com/articles/error-codes#h12-request-timeout
+
+# Development Log
+
+## October 12 2018
 
 
 1. In order to make things compile properly, I had to deleted the `Gemfile.lock` and run `bundle` again.
