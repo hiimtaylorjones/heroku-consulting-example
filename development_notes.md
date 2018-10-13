@@ -10,5 +10,19 @@
 
 # October 12 2018
 
-* In order to make things compile properly, I had to deleted the `Gemfile.lock` and 
-  run `bundle` again.
+
+1. In order to make things compile properly, I had to deleted the `Gemfile.lock` and run `bundle` again.
+
+2. There's a lot of issues around deploying the application to Heroku out of the box. After a bit of research, I found that the following issues was happening when I ran `rake assets:precompile` locally _and_ on Heroku:
+
+```
+/Users/tjones/.rvm/gems/ruby-2.4.0/gems/activesupport-4.2.7.1/lib/active_support/core_ext/numeric/conversions.rb:131:in `block (2 levels) in <class:Numeric>'
+/Users/tjones/.rvm/gems/ruby-2.4.0/gems/activesupport-4.2.7.1/lib/active_support/core_ext/numeric/conversions.rb:131:in `block (2 levels) in <class:Numeric>'
+/Users/tjones/.rvm/gems/ruby-2.4.0/gems/activesupport-4.2.7.1/lib/active_support/core_ext/numeric/conversions.rb:131:in `block (2 levels) in <class:Numeric>'
+/Users/tjones/.rvm/gems/ruby-2.4.0/gems/activesupport-4.2.7.1/lib/active_support/core_ext/numeric/conversions.rb:131:in `block (2 levels) in <class:Numeric>'
+```
+
+Turns out there's an ongoing dicussions around this going on in the Rails project: https://github.com/rails/rails/issues/25125
+
+I ultimately opted for a solution that involves bumping Rails up a bit: https://github.com/rails/rails/issues/25125#issuecomment-364135113
+
