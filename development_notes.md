@@ -31,7 +31,7 @@ Long Term:
 
 Use a pagination library to add the ability to sort your larger sets of data into easily digestable pages. Then add some UI elements to help users sort through each page of resources instead of trying to fetch the entire `.all` of a resource. 
 
-I've chosen to implement the long term solution here to show what it'd be like using the gem [kaminari](https://github.com/kaminari/kaminari). You can find all the work done in implementing pagintion under the commit tag `KI-1`
+I've chosen to implement the long term solution here to show what it'd be like using the gem [kaminari](https://github.com/kaminari/kaminari). You can find all the work done in implementing pagintion under the commit tag `KI-1`.
 
 For more info on H12 errors, check out the Heroku documentation here: https://devcenter.heroku.com/articles/error-codes#h12-request-timeout
 
