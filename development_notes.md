@@ -50,4 +50,9 @@ You should use PG::Connection, PG::Result, and PG::Error instead, respectively.
 
 ### Ruby 2.3.3 Is No Longer Supported
 
-Per: https://devcenter.heroku.com/articles/ruby-support#supported-runtimes, Ruby 2.3.3 is no longer supported on Heroku. So, we'll need to bump to 2.3.7.
+Per: https://devcenter.heroku.com/articles/ruby-support#supported-runtimes, Ruby 2.3.3 is no longer supported on Heroku. So, we'll need to bump to 2.4.0.
+
+This leads us to another intersting issue around precompiling our assets. I actually reverted on this change earlier to try using 2.3.3 (since the `.ruby-version` was set to that). But when you try to run `rake assets:precompile` on our application with Ruby 2.4.0, we run into an error that's been ongoing with Rails 2.4.6 - https://github.com/rails/rails/issues/25125. 
+
+There's a few options that we have towards this, but our best bet lies within just bumping our Rails version up a few versions to `~> 2.4.10` - https://github.com/rails/rails/issues/25125
+
