@@ -37,6 +37,8 @@ For more info on H12 errors, check out the Heroku documentation here: https://de
 
 ## October 12 2018
 
+### Rake DB Warnings
+
 Getting this warning when running `rake db:` commands:
 
 ```
@@ -45,3 +47,7 @@ removed as of version 1.0.
 
 You should use PG::Connection, PG::Result, and PG::Error instead, respectively.
 ```
+
+### Ruby 2.3.3 Is No Longer Supported
+
+Per: https://devcenter.heroku.com/articles/ruby-support#supported-runtimes, Ruby 2.3.3 is no longer supported on Heroku. So, we'll need to bump to 2.3.7.
