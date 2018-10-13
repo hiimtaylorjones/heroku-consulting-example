@@ -31,26 +31,17 @@ Long Term:
 
 Use a pagination library to add the ability to sort your larger sets of data into easily digestable pages. Then add some UI elements to help users sort through each page of resources instead of trying to fetch the entire `.all` of a resource. 
 
-
 For more info on H12 errors, check out the Heroku documentation here: https://devcenter.heroku.com/articles/error-codes#h12-request-timeout
 
 # Development Log
 
 ## October 12 2018
 
-
-1. In order to make things compile properly, I had to deleted the `Gemfile.lock` and run `bundle` again.
-
-2. There's a lot of issues around deploying the application to Heroku out of the box. After a bit of research, I found that the following issues was happening when I ran `rake assets:precompile` locally _and_ on Heroku:
+Getting this warning when running `rake db:` commands:
 
 ```
-/Users/tjones/.rvm/gems/ruby-2.4.0/gems/activesupport-4.2.7.1/lib/active_support/core_ext/numeric/conversions.rb:131:in `block (2 levels) in <class:Numeric>'
-/Users/tjones/.rvm/gems/ruby-2.4.0/gems/activesupport-4.2.7.1/lib/active_support/core_ext/numeric/conversions.rb:131:in `block (2 levels) in <class:Numeric>'
-/Users/tjones/.rvm/gems/ruby-2.4.0/gems/activesupport-4.2.7.1/lib/active_support/core_ext/numeric/conversions.rb:131:in `block (2 levels) in <class:Numeric>'
-/Users/tjones/.rvm/gems/ruby-2.4.0/gems/activesupport-4.2.7.1/lib/active_support/core_ext/numeric/conversions.rb:131:in `block (2 levels) in <class:Numeric>'
+The PGconn, PGresult, and PGError constants are deprecated, and will be
+removed as of version 1.0.
+
+You should use PG::Connection, PG::Result, and PG::Error instead, respectively.
 ```
-
-Turns out there's an ongoing dicussions around this going on in the Rails project: https://github.com/rails/rails/issues/25125
-
-I ultimately opted for a solution that involves bumping Rails up a bit: https://github.com/rails/rails/issues/25125#issuecomment-364135113
-
