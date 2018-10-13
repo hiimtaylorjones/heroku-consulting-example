@@ -47,6 +47,30 @@ Please note that the `config/production.rb` change is unique to what we're doing
 
 Source: https://help.heroku.com/J2R1S4T8/can-heroku-force-an-application-to-use-ssl-tls
 
+# Notes on Known Issue #3
+
+In our Application Layout file (`application.html.erb`), there's an issue with our logo showing up locally _and_ on Heroku. So, let's start on the local aspect of things and then do work to ensure it holds up on Heroku, if necessary.
+
+Initially, we find this piece of code in our layout:
+
+```
+<header>
+  <img src="logo.jpg" />
+</header>
+```
+
+First thing we want to check is: "Do I have an asset called `logo.jpg`? Looking at our `assets/images` folder, we do. This is great news! So, all we have to do is change the syntax of how we're calling our image. In Rails, its considered best practice to use the `image_tag` helper. You can read more about the helper [here](https://api.rubyonrails.org/classes/ActionView/Helpers/AssetTagHelper.html). 
+
+Instead of listing "logo.jpg", we'll change it to the following:
+
+```
+<header>
+  <%= image_tag "logo.jpg" %>
+</header>
+```
+
+This essentially tells Rails to look in the `assets/images` folder and find an image titled "logo.jpg". The [Asset Pipeline](https://guides.rubyonrails.org/asset_pipeline.html) then delivers the asset and helps us render it on the webpage.
+
 # Development Log
 
 ## October 12 2018
