@@ -93,6 +93,20 @@ Its missing one line that allows the Asset Pipeline (and our SASS processor) to 
 
 Adding `require_tree` to our comment block at the top will fix the issue. You'll find that not only `scaffolds.css` will be imported but also any future stylesheet you include in the `app/assets/stylesheets` folder.
 
+# Notes of Known Issue #5
+
+One of two things is happening here: Either we aren't looking at the right logs in Heroku or our application isn't configured to log as much information as we expect in our `production` environment (or whatever environment we're using on Heroku).
+
+We'll look at our production log configuration first. We can find this config in `config/environments/production.rb` file. It looks like we're using the lowest level available (or most detailed level) per the [Rails guides](https://guides.rubyonrails.org/debugging_rails_applications.html#log-levels):
+
+```ruby
+config.log_level = :debug
+```
+
+Looks good locally, so let's move on to looking at Heroku. I look at my app logs by running: `heroku logs --source app --tail` and find that not much changes with the output on each request. I'm seeing the boot up and deployment logs but not really anything beyond that. Looks like a bit more research is required.
+
+After some internet snooping, I came across a Heroku [article](https://devcenter.heroku.com/articles/rails4) about Rails 4 and logging on Heroku. I remember one of the things that stood out to me about my heroku deployment output was how I didn't have `rails_12factor` installed and how that was going to limit a lot of the insights and features I could leverage. Let's try that.
+
 # Development Log
 
 ## October 12 2018
@@ -116,3 +130,12 @@ This leads us to another intersting issue around precompiling our assets. I actu
 
 There's a few options that we have towards this, but our best bet lies within just bumping our Rails version up a few versions to `~> 2.4.10` - https://github.com/rails/rails/issues/25125
 
+# October 13 2018
+
+### Spicing Up CSS for Logo
+
+Since the logo comes out of the box as-is, I decided to take the liberty to add a few rules to restrain the size of it and center it at the top.
+
+### Adding a Link to Main Image
+
+I found it kind of annoying to navigate around the app without a means to get back to the "root" or home path of the app. So, I added in a quick link to make moving around the app a bit easier. 
