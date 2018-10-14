@@ -71,6 +71,28 @@ Instead of listing "logo.jpg", we'll change it to the following:
 
 This essentially tells Rails to look in the `assets/images` folder and find an image titled "logo.jpg". The [Asset Pipeline](https://guides.rubyonrails.org/asset_pipeline.html) then delivers the asset and helps us render it on the webpage.
 
+# Notes on Known Issue #4
+
+While every CSS processing library has their own way of dealing with importing, `sass-rails` has a pretty straightfoward way of dealing with imports.
+
+Notice in your `application.css`, there's a comment block at the top that looks something like this:
+
+```css
+/*
+ *= require_self
+ */
+```
+
+Its missing one line that allows the Asset Pipeline (and our SASS processor) to take all of the css files under the `app/assets/stylesheets` directory and compile it into one CSS manifest. That line is:
+
+```css
+ /*
+ *= require_tree
+ */
+```
+
+Adding `require_tree` to our comment block at the top will fix the issue. You'll find that not only `scaffolds.css` will be imported but also any future stylesheet you include in the `app/assets/stylesheets` folder.
+
 # Development Log
 
 ## October 12 2018
