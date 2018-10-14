@@ -93,7 +93,7 @@ Its missing one line that allows the Asset Pipeline (and our SASS processor) to 
 
 Adding `require_tree` to our comment block at the top will fix the issue. You'll find that not only `scaffolds.css` will be imported but also any future stylesheet you include in the `app/assets/stylesheets` folder.
 
-# Notes of Known Issue #5
+# Notes on Known Issue #5
 
 One of two things is happening here: Either we aren't looking at the right logs in Heroku or our application isn't configured to log as much information as we expect in our `production` environment (or whatever environment we're using on Heroku).
 
@@ -108,6 +108,29 @@ Looks good locally, so let's move on to looking at Heroku. I look at my app logs
 After some internet snooping, I came across a Heroku [article](https://devcenter.heroku.com/articles/rails4) about Rails 4 and logging on Heroku. I remember one of the things that stood out to me about my heroku deployment output was how I didn't have `rails_12factor` installed and how that was going to limit a lot of the insights and features I could leverage. Let's try that.
 
 After deployment, we find that installing `rails_12factor` was the correct solution. Our logs now output as expected.
+
+## Notes on Known Issue #6
+
+The good news is, we solved a lot of pain points around this by adding pagination. No longer are we loading around 1000 or so records every time we visit our posts index page. This is obviously great news! In the process of working through our other issues, we ended up tackling a lot of performance issues. There is one bigger one left and that's what we'll address next.
+
+## Notes on Known Issue #7
+
+In testing out the mailer process on Heroku, I get a 500 error that displays the following:
+
+```
+2018-10-14T02:25:28.664449+00:00 app[web.1]: PostMailer#create: processed outbound mail in 374.1ms
+2018-10-14T02:25:28.665456+00:00 app[web.1]: Completed 500 Internal Server Error in 380ms (ActiveRecord: 1.3ms)
+2018-10-14T02:25:28.666397+00:00 app[web.1]:
+2018-10-14T02:25:28.666399+00:00 app[web.1]: Errno::ECONNREFUSED (Connection refused - connect(2) for "localhost" port 25):
+2018-10-14T02:25:28.666401+00:00 app[web.1]: app/controllers/emails_controller.rb:10:in `create'
+```
+
+Running this locally yields the same results. So, what's the deal with the Port Connection Issue?
+
+For one, using `deliver_now` or `deliver_later` instead of `deliver!` works locally without error. However, we still need to address how to deal with emails in production. 
+
+[SendGrid AddOn](https://elements.heroku.com/addons/sendgrid)
+[SendGrid Tutorial](https://devcenter.heroku.com/articles/sendgrid)
 
 # Development Log
 

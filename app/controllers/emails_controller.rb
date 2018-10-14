@@ -7,7 +7,7 @@ class EmailsController < ApplicationController
   def create
     @post = Post.find params[:post_id]
 
-    PostMailer.create(@post, params[:email]).deliver!
+    PostMailer.create(@post, params[:email]).deliver_now
     redirect_to @post, notice: "Email sent!"
   end
 
