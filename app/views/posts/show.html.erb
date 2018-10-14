@@ -1,7 +1,5 @@
 <p id="notice"><%= notice %></p>
 
-
-
 <p style="float:right;">
   <%= link_to "Email Me This Post", new_email_path(post_id: @post.id) %>
 </p>
@@ -15,7 +13,7 @@
 <p>
   <strong>Author:</strong>
   <%= @post.author %>
-  <img src="/assets/mystery-man.jpg" />
+  <%= image_tag("mystery-man.jpg") %>
 </p>
 
 <%= link_to 'Edit', edit_post_path(@post) %> |

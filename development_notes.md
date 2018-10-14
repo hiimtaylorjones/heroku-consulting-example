@@ -180,3 +180,7 @@ Looking around the app, I found the following javascript include tag at the top 
 ```
 
 Seems kind of weird considering we don't have any `scaffolds` javascript. We do have a sass file named `scaffolds.scss` but it has no relation to our javascript. I've patched this to not include the `scaffolds` tag for the time being, chalking it up on confusion around how to include `scaffolds.scss` since that was a known issue.
+
+### Mystery Man
+
+Found an issue in `app/views/posts/show.html.erb` where we were trying to include an image manually. While the image showed up, we weren't really utilizing the Asset Pipeline to the best of our ability. So I decided to use `image_tag`.
