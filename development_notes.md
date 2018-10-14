@@ -107,6 +107,8 @@ Looks good locally, so let's move on to looking at Heroku. I look at my app logs
 
 After some internet snooping, I came across a Heroku [article](https://devcenter.heroku.com/articles/rails4) about Rails 4 and logging on Heroku. I remember one of the things that stood out to me about my heroku deployment output was how I didn't have `rails_12factor` installed and how that was going to limit a lot of the insights and features I could leverage. Let's try that.
 
+After deployment, we find that installing `rails_12factor` was the correct solution. Our logs now output as expected.
+
 # Development Log
 
 ## October 12 2018
@@ -139,3 +141,42 @@ Since the logo comes out of the box as-is, I decided to take the liberty to add 
 ### Adding a Link to Main Image
 
 I found it kind of annoying to navigate around the app without a means to get back to the "root" or home path of the app. So, I added in a quick link to make moving around the app a bit easier. 
+
+### JS error in the layout
+
+When I patched the issue with Rails logging on Heroku, I noticed an error that was constantly occuring in the logs:
+
+```
+0-14T01:46:09.902177+00:00 app[web.1]: ActionController::RoutingError (No route matches [GET] "/javascripts/scaffolds.js"):
+2018-10-14T01:46:09.902179+00:00 app[web.1]: vendor/bundle/ruby/2.4.0/gems/actionpack-4.2.10/lib/action_dispatch/middleware/debug_exceptions.rb:21:in `call'
+2018-10-14T01:46:09.902181+00:00 app[web.1]: vendor/bundle/ruby/2.4.0/gems/actionpack-4.2.10/lib/action_dispatch/middleware/show_exceptions.rb:30:in `call'
+2018-10-14T01:46:09.902182+00:00 app[web.1]: vendor/bundle/ruby/2.4.0/gems/railties-4.2.10/lib/rails/rack/logger.rb:38:in `call_app'
+2018-10-14T01:46:09.902184+00:00 app[web.1]: vendor/bundle/ruby/2.4.0/gems/railties-4.2.10/lib/rails/rack/logger.rb:20:in `block in call'
+2018-10-14T01:46:09.902186+00:00 app[web.1]: vendor/bundle/ruby/2.4.0/gems/activesupport-4.2.10/lib/active_support/tagged_logging.rb:68:in `block in tagged'
+2018-10-14T01:46:09.902188+00:00 app[web.1]: vendor/bundle/ruby/2.4.0/gems/activesupport-4.2.10/lib/active_support/tagged_logging.rb:26:in `tagged'
+2018-10-14T01:46:09.902190+00:00 app[web.1]: vendor/bundle/ruby/2.4.0/gems/activesupport-4.2.10/lib/active_support/tagged_logging.rb:68:in `tagged'
+2018-10-14T01:46:09.902191+00:00 app[web.1]: vendor/bundle/ruby/2.4.0/gems/railties-4.2.10/lib/rails/rack/logger.rb:20:in `call'
+2018-10-14T01:46:09.902193+00:00 app[web.1]: vendor/bundle/ruby/2.4.0/gems/actionpack-4.2.10/lib/action_dispatch/middleware/request_id.rb:21:in `call'
+2018-10-14T01:46:09.902194+00:00 app[web.1]: vendor/bundle/ruby/2.4.0/gems/rack-1.6.10/lib/rack/methodoverride.rb:22:in `call'
+2018-10-14T01:46:09.902197+00:00 app[web.1]: vendor/bundle/ruby/2.4.0/gems/rack-1.6.10/lib/rack/runtime.rb:18:in `call'
+2018-10-14T01:46:09.902198+00:00 app[web.1]: vendor/bundle/ruby/2.4.0/gems/activesupport-4.2.10/lib/active_support/cache/strategy/local_cache_middleware.rb:28:in `call'
+2018-10-14T01:46:09.902200+00:00 app[web.1]: vendor/bundle/ruby/2.4.0/gems/actionpack-4.2.10/lib/action_dispatch/middleware/static.rb:120:in `call'
+2018-10-14T01:46:09.902206+00:00 app[web.1]: vendor/bundle/ruby/2.4.0/gems/rack-1.6.10/lib/rack/sendfile.rb:113:in `call'
+2018-10-14T01:46:09.902208+00:00 app[web.1]: vendor/bundle/ruby/2.4.0/gems/actionpack-4.2.10/lib/action_dispatch/middleware/ssl.rb:24:in `call'
+2018-10-14T01:46:09.902210+00:00 app[web.1]: vendor/bundle/ruby/2.4.0/gems/railties-4.2.10/lib/rails/engine.rb:518:in `call'
+2018-10-14T01:46:09.902212+00:00 app[web.1]: vendor/bundle/ruby/2.4.0/gems/railties-4.2.10/lib/rails/application.rb:165:in `call'
+2018-10-14T01:46:09.902214+00:00 app[web.1]: vendor/bundle/ruby/2.4.0/gems/rack-1.6.10/lib/rack/lock.rb:17:in `call'
+2018-10-14T01:46:09.902215+00:00 app[web.1]: vendor/bundle/ruby/2.4.0/gems/rack-1.6.10/lib/rack/content_length.rb:15:in `call'
+2018-10-14T01:46:09.902217+00:00 app[web.1]: vendor/bundle/ruby/2.4.0/gems/rack-1.6.10/lib/rack/handler/webrick.rb:88:in `service'
+2018-10-14T01:46:09.902219+00:00 app[web.1]: vendor/ruby-2.4.0/lib/ruby/2.4.0/webrick/httpserver.rb:140:in `service'
+2018-10-14T01:46:09.902220+00:00 app[web.1]: vendor/ruby-2.4.0/lib/ruby/2.4.0/webrick/httpserver.rb:96:in `run'
+2018-10-14T01:46:09.902222+00:00 app[web.1]: vendor/ruby-2.4.0/lib/ruby/2.4.0/webrick/server.rb:290:in `block in start_thread`
+```
+
+Looking around the app, I found the following javascript include tag at the top of the application:
+
+```
+<%= javascript_include_tag 'application', 'scaffolds' %>
+```
+
+Seems kind of weird considering we don't have any `scaffolds` javascript. We do have a sass file named `scaffolds.scss` but it has no relation to our javascript. I've patched this to not include the `scaffolds` tag for the time being, chalking it up on confusion around how to include `scaffolds.scss` since that was a known issue.
