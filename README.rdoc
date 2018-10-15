@@ -1,28 +1,24 @@
-== README
+# About This Project
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+This project shows how I would address fixing known issues (as well as discovering hidden) issues with
+a Rails application hosted on Heroku. The application is a basic blog that has the ability to manage 
+posts as well as share them with others via email.
 
-Things you may want to cover:
+## Local Setup
 
-* Ruby version
+```bash
+bundle
+rake db:create 
+rake db:migrate
+rake db:seed
+```
 
-* System dependencies
+You can then run the application via:
 
-* Configuration
+```shell
+rails s
+```
 
-* Database creation
+## Resources
 
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
-
-
-Please feel free to use a different markup language if you do not plan to run
-<tt>rake doc:app</tt>.
+* You can find notes on the devlopment and resolution of issues [here](development_notes.md)
