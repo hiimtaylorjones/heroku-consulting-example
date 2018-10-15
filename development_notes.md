@@ -1,14 +1,14 @@
 # Known Issues
 
-  1. I'm seeing a lot of H12 errors on my app. Someone said something about "concurrency"? Not sure what that is or how to fix my app.
-  2. I don't want my app being accessible via http. Is there a way I can force all requests to https?
-  3. I can't seem to get my logo.jpg to work in my application layout. Any ideas?
-  4. I'm trying to include `scaffolds.scss` in the project, but it's not loading.
-  5. When I check my logs on Heroku, I don't see any output from Rails.
-  6. My main index page that lists all the posts is really slow and has a ton of DB queries. What's going on here?
-  7. I added this awesome feature to email me a post. Example: http://localhost:3000/emails/new?post_id=66  But when I submit the form, it's kind of slow. Any ideas on how I can speed this up?
+  [KI-1]. I'm seeing a lot of H12 errors on my app. Someone said something about "concurrency"? Not sure what that is or how to fix my app.
+  [KI-2]. I don't want my app being accessible via http. Is there a way I can force all requests to https?
+  [KI-3]. I can't seem to get my logo.jpg to work in my application layout. Any ideas?
+  [KI-4]. I'm trying to include `scaffolds.scss` in the project, but it's not loading.
+  [KI-5]. When I check my logs on Heroku, I don't see any output from Rails.
+  [KI-6]. My main index page that lists all the posts is really slow and has a ton of DB queries. What's going on here?
+  [KI-7]. I added this awesome feature to email me a post. Example: http://localhost:3000/emails/new?post_id=66  But when I submit the form, it's kind of slow. Any ideas on how I can speed this up?
 
-# Notes on Known Issues #1
+# Notes on Known Issue #1
 
 Heroku offers a variety of errors to better inform users around what's happening in their application. The error that's specifically being referenced (H12) is one that's triggered when your HTTP request takes longer than 30 seconds to complete on your Heroku instance or instances. So, while it may not take 30 seconds to complete locally, its happening on Heroku and triggering that error.
 
@@ -20,7 +20,7 @@ Short Term:
 
 Use a limit to your index calls. You can do the following:
 
-```
+```ruby
 # Grab 25 comments
 Comment.all.limit(25)
 # Grab the 25 most recent comments
@@ -53,7 +53,7 @@ In our Application Layout file (`application.html.erb`), there's an issue with o
 
 Initially, we find this piece of code in our layout:
 
-```
+```html
 <header>
   <img src="logo.jpg" />
 </header>
@@ -63,7 +63,7 @@ First thing we want to check is: "Do I have an asset called `logo.jpg`? Looking 
 
 Instead of listing "logo.jpg", we'll change it to the following:
 
-```
+```html
 <header>
   <%= image_tag "logo.jpg" %>
 </header>
@@ -115,9 +115,11 @@ The good news is, we solved a lot of pain points around this by adding paginatio
 
 ## Notes on Known Issue #7
 
+### The Error
+
 In testing out the mailer process on Heroku, I get a 500 error that displays the following:
 
-```
+```shell
 2018-10-14T02:25:28.664449+00:00 app[web.1]: PostMailer#create: processed outbound mail in 374.1ms
 2018-10-14T02:25:28.665456+00:00 app[web.1]: Completed 500 Internal Server Error in 380ms (ActiveRecord: 1.3ms)
 2018-10-14T02:25:28.666397+00:00 app[web.1]:
@@ -127,10 +129,64 @@ In testing out the mailer process on Heroku, I get a 500 error that displays the
 
 Running this locally yields the same results. So, what's the deal with the Port Connection Issue?
 
-For one, using `deliver_now` or `deliver_later` instead of `deliver!` works locally without error. However, we still need to address how to deal with emails in production. 
+### The Solution
 
-[SendGrid AddOn](https://elements.heroku.com/addons/sendgrid)
-[SendGrid Tutorial](https://devcenter.heroku.com/articles/sendgrid)
+For one, using `deliver_now` or `deliver_later` instead of `deliver!` works locally without error. For reasons I'll explain bellow, we should be using `deliver_later` because of its usage of `ActiveJob`.
+
+What's the reason behind this?
+
+Looking at the [source code](https://github.com/mikel/mail/blob/master/lib/mail/message.rb#L261) for our `deliver!` method, we find that it bypasses a lot of checks and errors diagnostic information that our Mail library gives us. Looking at [Rails' documentation on ActionMailer](https://guides.rubyonrails.org/action_mailer_basics.html#calling-the-mailer), we find that we should be using one of two methods for delivering mail: `deliver_now` or `deliver_later`.
+
+The difference between these two helps us exposes the problem we were trying to solve in the first place. 
+
+`deliver_now` executes the "sending" of mail inline. What this means is that whatever is calling it won't finish until that mailer has been created and sent. 
+
+`deliver_later` creates the mail instance, but delegates the sending of it to Rails' `ActiveJob` or whatever job processing libraries you're using (like Sidekiq). This allows your application to keep running while some "magic" in the backend handles the sending of the mail without holding up a user from doing anything else. There is a catch to this, though. Rails' documentation explains it pretty well
+
+> Active Job's default behavior is to execute jobs via the :async adapter. So, you can use deliver_later now to send emails asynchronously. Active Job's default adapter runs jobs with an in-process thread pool. It's well-suited for the development/test environments, since it doesn't require any external infrastructure, but it's a poor fit for production since it drops pending jobs on restart. If you need a persistent backend, you will need to use an Active Job adapter that has a persistent backend (Sidekiq, Resque, etc).
+
+In short, `deliver_later` saves us from a mailer call blocking an endpoint or action. If the `deliver_later` fails, it just fails. There's no chance to retry or see what went wrong. It fails and disappears from our Rails app's train of thought. So, it would be highly reccomended that we look into using something like `Sidekiq` or `Resque` for our applicaiton.
+
+With this bit of performance mystery dissected, there's still a bit of work that we need to do to our Heroku application to help it send mail in production.
+
+### Setting Heroku Up for Sending Emails
+
+After taking a look at the email settings in each enviornment, there's also a need to configure our Heroku `production` environment to properly send emails. Heroku offers a variety of addons to help us do this, but I want to implement this with Sendgrid.
+
+First up, we need to install this on Heroku:
+
+```shell
+heroku addons:create sendgrid:starter
+```
+
+This will trigger a process that will automatically setup the Sendgrid AddOn on our Heroku app. It will also create us Sendgrid credentials (listed in the app as `SENDGRID_USERNAME` and `SENDGRID_PASSWORD`). 
+
+With that setup, we can go ahead and install the `sendgrid-ruby` gem in the `production` group in our `Gemfile`. This will give us the ability to communicate with SendGrid
+
+We'll then add the following code to our `config/environments/production.rb`:
+
+```ruby
+# Setup the mailer config
+config.action_mailer.delivery_method = :smtp
+config.action_mailer.perform_deliveries = true
+config.action_mailer.smtp_settings = {
+  :user_name => ENV['SENDGRID_USERNAME'],
+  :password => ENV['SENDGRID_PASSWORD'],
+  :domain => 'taylor-jones-heroku-interview.herokuapp.com', 
+  :address => 'smtp.sendgrid.net',
+  :port => 587,
+  :authentication => :plain,
+  :enable_starttls_auto => true
+}
+```
+
+Since we have those variables in our Heroku app, we should be good to go! Upon execution, you should now find that your Heroku app is sending emails from SendGrid! 
+
+
+### Resources
+
+* [SendGrid AddOn](https://elements.heroku.com/addons/sendgrid)
+* [SendGrid Tutorial](https://devcenter.heroku.com/articles/sendgrid)
 
 # Development Log
 
@@ -207,3 +263,9 @@ Seems kind of weird considering we don't have any `scaffolds` javascript. We do 
 ### Mystery Man
 
 Found an issue in `app/views/posts/show.html.erb` where we were trying to include an image manually. While the image showed up, we weren't really utilizing the Asset Pipeline to the best of our ability. So I decided to use `image_tag`.
+
+# October 14 2018
+
+### Deleting Some Posts
+
+Due to constriants by Postgres' Free Tier, I needed to delete some of the records in my database. I deleted a hundred or so posts to help meet this limit. Most of the findings and solutions I have made should still be relevent despite the lighter database workload for the application.
