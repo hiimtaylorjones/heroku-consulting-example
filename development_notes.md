@@ -24,7 +24,7 @@ Use a limit to your index calls. You can do the following:
 # Grab 25 comments
 Comment.all.limit(25)
 # Grab the 25 most recent comments
-Comment.order(:created_at, :desc).limit(25)
+Comment.order(created_at: :desc).limit(25)
 ```
 
 Long Term:
