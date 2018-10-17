@@ -35,6 +35,14 @@ I've chosen to implement the long term solution here to show what it'd be like u
 
 For more info on H12 errors, check out the Heroku documentation here: https://devcenter.heroku.com/articles/error-codes#h12-request-timeout
 
+## A Few Notes on Finding Performance Issues
+
+Our Posts index sticks out as the area that needs the most attention right now. However, that's not to say that other parts of our application might suffer from similar performance issues down the road. I usually look at three general steps when diagnosing an issue:
+
+1. When I click my way through and interact with a feature, what triggers a slowdown? Is it a page load? Or does clicking a button cause some sort of drag? What's causing the performance drag from a user perspective can help us nail down where to look.
+2. Look at your Rails logs. More specifically, what kind of database queries are happening? Is it one giant query that's waiting awhile before it outputs more information? Or is it a fury of a bunch of singular resources being loaded at once? If the query hangs, we're probably trying to fetch something that's too big. If there's a fury of queries, we're probably hitting the database too many times.
+3. Look at the ActiveRecord queries being called during a controller endpoint. Would any of those be suspect to causing a slowdown? For example, I knew that `Post.all` was the offender right away because I know that it tries to fetch _every_ `Post` record we had. So, it confirmed my suspicion that the P12 errors were rooted in using queries like that.
+
 # Notes on Known Issue #2
 
 Heroku delegates the responsibility of redirecting to SSL (or HTTPS) at the application level. This means there's no "magic" setting or button on Heroku to presss that does this. Since we're using a Rails application, we'll need to make that change at the `config/production.rb` level via:
@@ -107,7 +115,7 @@ Looks good locally, so let's move on to looking at Heroku. I look at my app logs
 
 After some internet snooping, I came across a Heroku [article](https://devcenter.heroku.com/articles/rails4) about Rails 4 and logging on Heroku. I remember one of the things that stood out to me about my heroku deployment output was how I didn't have `rails_12factor` installed and how that was going to limit a lot of the insights and features I could leverage. Let's try that.
 
-After deployment, we find that installing `rails_12factor` was the correct solution. Our logs now output as expected.
+After deployment, we find that installing `rails_12factor` was the correct solution. Our logs now output as expected. After a bit of poking around on `rails_12factor`'s docs I found [the reason](https://github.com/heroku/rails_12factor#rails-4-logging) why it fixes our issue - besides the fact that Heroku has a doc that reccomends it. 
 
 ## Notes on Known Issue #6
 
@@ -295,3 +303,5 @@ Next, I came across a [Heroku article](https://help.heroku.com/WKJ027JH/rails-er
 While all of these are great, I chose to use the monkeypatch since I didn't want to rock the boat around the Rails or Postgres version this late in the project. With the patch in place, I finally had results from the test suite. 
 
 While a lot of test coverage was valid and in place for the application, many tests were out of date or not needed at all. So, I cleaned up and fixed the test suite.
+
+Two files, `test/controllers/posts_controller_test.rb` and `test/mailers/post_mailer_test.rb` needed to have test cases fixed. I commented out `test/controllers/comments_controller_test.rb` because its routes were never included within the `config/routes.rb` file of our application. I want to leave that up to the client to decide whether or not they want to include that functionality or delete it alltogether.
