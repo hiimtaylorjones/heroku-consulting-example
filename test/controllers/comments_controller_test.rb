@@ -6,8 +6,7 @@ class CommentsControllerTest < ActionController::TestCase
   end
 
   # None of these tests are not valid as they have not been enabled in our routes file yet
-  # nor have they been implemented from a view perspective. Once that's done, we can
-  # uncomment these tests
+  # Once that's done, we can uncomment these tests
 
   # test "should get index" do
   #   get :index
