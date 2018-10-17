@@ -292,4 +292,6 @@ Next, I came across a [Heroku article](https://help.heroku.com/WKJ027JH/rails-er
 2. Use one the [monkeypaches](https://github.com/rails/rails/issues/28780#issuecomment-354868174) in the issue referenced above
 3. Change from Postgres 10.5 to Postgres 6
 
-While all of these are great, I chose to use the monkeypatch since I didn't want to rock the boat around the Rails or Postgres version this late in the project. 
+While all of these are great, I chose to use the monkeypatch since I didn't want to rock the boat around the Rails or Postgres version this late in the project. With the patch in place, I finally had results from the test suite. 
+
+While a lot of test coverage was valid and in place for the application, many tests were out of date or not needed at all. So, I cleaned up and fixed the test suite.
