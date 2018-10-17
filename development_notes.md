@@ -269,3 +269,27 @@ Found an issue in `app/views/posts/show.html.erb` where we were trying to includ
 ### Deleting Some Posts
 
 Due to constriants by Postgres' Free Tier, I needed to delete some of the records in my database. I deleted a hundred or so posts to help meet this limit. Most of the findings and solutions I have made should still be relevent despite the lighter database workload for the application.
+
+# October 16 2018
+
+### Running Tests and Patching Our Rails Instance
+
+While it wasn't one of the requirements, I was curious about whether the test suite had any real coverage
+at all. So, I started to run the tests locally and was immediately hit with this error:
+
+```
+ActiveRecord::StatementInvalid: PG::UndefinedColumn: ERROR:  column "increment_by" does not exist
+LINE 1: ...osts_id_seq"', (SELECT COALESCE(MAX("id")+(SELECT increment_...
+```
+
+My initial suspicion was that it was related to the version of Postgres I was running locally. Turns out I was running the same version that's running on Heroku (10.5). So I started to look around for a way to bypass this. 
+
+First, I came across a long-standing [Rails issue](https://github.com/rails/rails/issues/28780) on the matter. There was a few monkeypatches for the issue offered by various users, but I was curious if there were any other options out there.
+
+Next, I came across a [Heroku article](https://help.heroku.com/WKJ027JH/rails-error-after-upgrading-to-postgres-10) that seemed to imply there were three acceptable ways to handle this:
+
+1. Upgrade to Rails 5
+2. Use one the [monkeypaches](https://github.com/rails/rails/issues/28780#issuecomment-354868174) in the issue referenced above
+3. Change from Postgres 10.5 to Postgres 6
+
+While all of these are great, I chose to use the monkeypatch since I didn't want to rock the boat around the Rails or Postgres version this late in the project. 
