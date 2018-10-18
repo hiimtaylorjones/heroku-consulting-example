@@ -35,6 +35,8 @@ I've chosen to implement the long term solution here to show what it'd be like u
 
 For more info on H12 errors, check out the Heroku documentation here: https://devcenter.heroku.com/articles/error-codes#h12-request-timeout
 
+Heroku also has a helpful article on general approaches towards H12 errors: https://help.heroku.com/PFSOIDTR/why-am-i-seeing-h12-request-timeouts-high-response-times-in-my-app
+
 ## A Few Notes on Finding Performance Issues
 
 Our Posts index sticks out as the area that needs the most attention right now. However, that's not to say that other parts of our application might suffer from similar performance issues down the road. I usually look at three general steps when diagnosing an issue:
@@ -45,7 +47,7 @@ Our Posts index sticks out as the area that needs the most attention right now. 
 
 ## A Few Notes of Concurrency and Ruby
 
-If your initial problem description, you mentioned concurrency as a possibility for solving H12 errors. Concurrency is a great way to handle heavy workloads of code by splitting it up into separate CPU threads to be executed. 
+If your initial problem description, you mentioned concurrency as a possibility for solving H12 errors. Concurrency is a great way to handle a heavy workload of code by splitting it up into separate CPU threads to be executed. This is a great approach to handling more dense blocks of code, but it can be a bit tricky or risky. Ruby and Rails in particular have a reputation for not being able to handle concurrent code in the best way possible. However, it can still be really effective if you give it the right amount of work and attention. I would reccomend making something concurrent after optimizing the ActiveRecord or Ruby portion of the slow parts of your app. If you still find it slow after refactoring your code block into the best possible version of itself, concurrency is a great next step to start with.
 
 # Notes on Known Issue #2
 
