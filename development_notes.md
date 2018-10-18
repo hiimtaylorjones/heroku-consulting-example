@@ -119,7 +119,66 @@ After deployment, we find that installing `rails_12factor` was the correct solut
 
 ## Notes on Known Issue #6
 
-The good news is, we solved a lot of pain points around this by adding pagination. No longer are we loading around 1000 or so records every time we visit our posts index page. This is obviously great news! In the process of working through our other issues, we ended up tackling a lot of performance issues. There is one bigger one left and that's what we'll address next.
+Earlier in this project, during fixing Known Issue #1, we encountered a few ideas around how to find and debug performance issues. In the case of that issue, we simply fixed an ActiveRecord call and implemented pagination. But what about the deeper issues of performance? We were able to patch the issues of performance in terms of load times, but what about the numerous queries we're seeing?
+
+Rails, like many frameworks, has this notition of including resources through `has_many` and `belongs_to` relationships. For example, if I load up an endpoint with `@posts = Post.all.limit(25)`, that's one general query. But then in our view, we reference the author of a post object. It ends up generating Rails logs that look something like this:
+
+```
+Processing by PostsController#index as HTML
+  Post Load (47.2ms)  SELECT  "posts".* FROM "posts" LIMIT 25 OFFSET 0
+  Author Load (34.4ms)  SELECT  "authors".* FROM "authors" WHERE "authors"."id" = $1 LIMIT 1  [["id", 53]]
+  Author Load (0.5ms)  SELECT  "authors".* FROM "authors" WHERE "authors"."id" = $1 LIMIT 1  [["id", 38]]
+  Author Load (0.2ms)  SELECT  "authors".* FROM "authors" WHERE "authors"."id" = $1 LIMIT 1  [["id", 10]]
+  Author Load (0.3ms)  SELECT  "authors".* FROM "authors" WHERE "authors"."id" = $1 LIMIT 1  [["id", 61]]
+  Author Load (0.3ms)  SELECT  "authors".* FROM "authors" WHERE "authors"."id" = $1 LIMIT 1  [["id", 13]]
+  Author Load (0.2ms)  SELECT  "authors".* FROM "authors" WHERE "authors"."id" = $1 LIMIT 1  [["id", 34]]
+  Author Load (0.1ms)  SELECT  "authors".* FROM "authors" WHERE "authors"."id" = $1 LIMIT 1  [["id", 14]]
+  CACHE (0.0ms)  SELECT  "authors".* FROM "authors" WHERE "authors"."id" = $1 LIMIT 1  [["id", 14]]
+  Author Load (0.1ms)  SELECT  "authors".* FROM "authors" WHERE "authors"."id" = $1 LIMIT 1  [["id", 70]]
+  Author Load (0.1ms)  SELECT  "authors".* FROM "authors" WHERE "authors"."id" = $1 LIMIT 1  [["id", 57]]
+  Author Load (0.1ms)  SELECT  "authors".* FROM "authors" WHERE "authors"."id" = $1 LIMIT 1  [["id", 62]]
+  Author Load (0.1ms)  SELECT  "authors".* FROM "authors" WHERE "authors"."id" = $1 LIMIT 1  [["id", 19]]
+  Author Load (0.3ms)  SELECT  "authors".* FROM "authors" WHERE "authors"."id" = $1 LIMIT 1  [["id", 77]]
+  Author Load (0.3ms)  SELECT  "authors".* FROM "authors" WHERE "authors"."id" = $1 LIMIT 1  [["id", 65]]
+  Author Load (0.1ms)  SELECT  "authors".* FROM "authors" WHERE "authors"."id" = $1 LIMIT 1  [["id", 73]]
+  Author Load (0.1ms)  SELECT  "authors".* FROM "authors" WHERE "authors"."id" = $1 LIMIT 1  [["id", 51]]
+  Author Load (0.2ms)  SELECT  "authors".* FROM "authors" WHERE "authors"."id" = $1 LIMIT 1  [["id", 16]]
+  Author Load (0.1ms)  SELECT  "authors".* FROM "authors" WHERE "authors"."id" = $1 LIMIT 1  [["id", 31]]
+  Author Load (0.1ms)  SELECT  "authors".* FROM "authors" WHERE "authors"."id" = $1 LIMIT 1  [["id", 29]]
+  Author Load (0.1ms)  SELECT  "authors".* FROM "authors" WHERE "authors"."id" = $1 LIMIT 1  [["id", 41]]
+  CACHE (0.0ms)  SELECT  "authors".* FROM "authors" WHERE "authors"."id" = $1 LIMIT 1  [["id", 19]]
+  Author Load (0.1ms)  SELECT  "authors".* FROM "authors" WHERE "authors"."id" = $1 LIMIT 1  [["id", 36]]
+  Author Load (0.1ms)  SELECT  "authors".* FROM "authors" WHERE "authors"."id" = $1 LIMIT 1  [["id", 80]]
+  Author Load (0.1ms)  SELECT  "authors".* FROM "authors" WHERE "authors"."id" = $1 LIMIT 1  [["id", 11]]
+  CACHE (0.0ms)  SELECT  "authors".* FROM "authors" WHERE "authors"."id" = $1 LIMIT 1  [["id", 29]]
+   (6.5ms)  SELECT COUNT(*) FROM "posts"
+```
+
+Now, these `Author` load times are on average around `0.1ms` each. Not too harmful right? Well, they're not harmful at the moment but they will weigh down your application in the future as the cost of that database call increases. We want a solution that will allow us to significantly cut down on the amount of database calls we're making. Luckily for us, ActiveRecord has a pretty cool method called [`includes`]() that allows us to specify a relationship and have that data included back in the base payload of what we're calling. So, the size of the data we're getting stays the same but we're making a lot less database calls to get it! 
+
+We can do this with our posts index by changing:
+
+```ruby
+@posts = Post.all.page(params[:page])
+```
+
+Into:
+
+```ruby
+@posts = Post.all.page(params[:page]).includes(:author)
+```
+
+This gives us a Rails logger output of:
+
+
+```
+Processing by PostsController#index as HTML
+  Post Load (0.4ms)  SELECT  "posts".* FROM "posts" LIMIT 25 OFFSET 0
+  Author Load (43.7ms)  SELECT "authors".* FROM "authors" WHERE "authors"."id" IN (53, 38, 10, 61, 13, 34, 14, 70, 57, 62, 19, 77, 65, 73, 51, 16, 31, 29, 41, 36, 80, 11)
+   (0.5ms)  SELECT COUNT(*) FROM "posts"
+  Rendered posts/index.html.erb within layouts/appli
+```
+
 
 ## Notes on Known Issue #7
 
