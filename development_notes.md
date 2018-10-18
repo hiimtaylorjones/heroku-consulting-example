@@ -51,7 +51,7 @@ If your initial problem description, you mentioned [concurrency](https://en.wiki
 
 # Notes on Known Issue #2
 
-Heroku delegates the responsibility of redirecting to SSL (or HTTPS) at the application level. This means there's no "magic" setting or button on Heroku to presss that does this. Since we're using a Rails application, we'll need to make that change at the `config/production.rb` level via:
+Heroku delegates the responsibility of redirecting to SSL (or HTTPS) at the application level. This means there's no "magic" setting or button on Heroku to press that does this. Since we're using a Rails application, we'll need to make that change at the `config/production.rb` level via:
 
 ```ruby
 config.force_ssl = true
@@ -87,7 +87,7 @@ This essentially tells Rails to look in the `assets/images` folder and find an i
 
 # Notes on Known Issue #4
 
-While every CSS processing library has their own way of dealing with importing, `sass-rails` has a pretty straightfoward way of dealing with imports.
+While every CSS processing library has their own way of dealing with importing, Rails has a pretty straightfoward way of dealing with imports.
 
 Notice in your `application.css`, there's a comment block at the top that looks something like this:
 
@@ -206,7 +206,7 @@ Running this locally yields the same results. So, what's the deal with the Port 
 
 For one, using `deliver_now` or `deliver_later` instead of `deliver!` works locally without error. For reasons I'll explain bellow, we should be using `deliver_later` because of its usage of `ActiveJob`.
 
-What's the reason behind this?
+### What's the reason behind this?
 
 Looking at the [source code](https://github.com/mikel/mail/blob/master/lib/mail/message.rb#L261) for our `deliver!` method, we find that it bypasses a lot of checks and errors diagnostic information that our Mail library gives us. Looking at [Rails' documentation on ActionMailer](https://guides.rubyonrails.org/action_mailer_basics.html#calling-the-mailer), we find that we should be using one of two methods for delivering mail: `deliver_now` or `deliver_later`.
 
