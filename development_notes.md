@@ -43,6 +43,10 @@ Our Posts index sticks out as the area that needs the most attention right now. 
 2. Look at your Rails logs. More specifically, what kind of database queries are happening? Is it one giant query that's waiting awhile before it outputs more information? Or is it a fury of a bunch of singular resources being loaded at once? If the query hangs, we're probably trying to fetch something that's too big. If there's a fury of queries, we're probably hitting the database too many times.
 3. Look at the ActiveRecord queries being called during a controller endpoint. Would any of those be suspect to causing a slowdown? For example, I knew that `Post.all` was the offender right away because I know that it tries to fetch _every_ `Post` record we had. So, it confirmed my suspicion that the P12 errors were rooted in using queries like that.
 
+## A Few Notes of Concurrency and Ruby
+
+If your initial problem description, you mentioned concurrency as a possibility for solving H12 errors. Concurrency is a great way to handle heavy workloads of code by splitting it up into separate CPU threads to be executed. 
+
 # Notes on Known Issue #2
 
 Heroku delegates the responsibility of redirecting to SSL (or HTTPS) at the application level. This means there's no "magic" setting or button on Heroku to presss that does this. Since we're using a Rails application, we'll need to make that change at the `config/production.rb` level via:
