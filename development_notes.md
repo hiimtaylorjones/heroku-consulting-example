@@ -154,7 +154,7 @@ Processing by PostsController#index as HTML
    (6.5ms)  SELECT COUNT(*) FROM "posts"
 ```
 
-Now, these `Author` load times are on average around `0.1ms` each. Not too harmful right? Well, they're not harmful at the moment but they will weigh down your application in the future as the cost of that database call increases. We want a solution that will allow us to significantly cut down on the amount of database calls we're making. Luckily for us, ActiveRecord has a pretty cool method called [`includes`]() that allows us to specify a relationship and have that data included back in the base payload of what we're calling. So, the size of the data we're getting stays the same but we're making a lot less database calls to get it! 
+Now, these `Author` load times are on average around `0.1ms` each. Not too harmful right? Well, they're not harmful at the moment but they will weigh down your application in the future as the cost of that database call increases. We want a solution that will allow us to significantly cut down on the amount of database calls we're making. Luckily for us, ActiveRecord has a pretty cool method called [`includes`](https://guides.rubyonrails.org/active_record_querying.html#eager-loading-associations) that allows us to specify a relationship and have that data included back in the base payload of what we're calling. So, the size of the data we're getting stays the same but we're making a lot less database calls to get it! 
 
 We can do this with our posts index by changing:
 
@@ -165,7 +165,7 @@ We can do this with our posts index by changing:
 Into:
 
 ```ruby
-@posts = Post.all.page(params[:page]).includes(:author)
+@posts = Post.includes(:author).all.page(params[:page])
 ```
 
 This gives us a Rails logger output of:
